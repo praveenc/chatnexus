@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Settings2Icon, ThermometerIcon, HashIcon, ServerIcon, KeyIcon, SaveIcon } from 'lucide-react';
+import Image from 'next/image';
+import { ThermometerIcon, HashIcon, ServerIcon, KeyIcon, SaveIcon } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Input } from '@/components/ui/input';
@@ -29,8 +30,8 @@ interface AppSidebarProps {
   modelCount?: ModelCount;
 }
 
-export function AppSidebar({ 
-  settings, 
+export function AppSidebar({
+  settings,
   onSettingsChange,
   modelCount = { lmstudio: 0, ollama: 0, bedrock: 0 },
 }: AppSidebarProps) {
@@ -136,23 +137,36 @@ export function AppSidebar({
               <div className="space-y-2">
                 <Label className="text-xs font-medium">Provider Selection</Label>
                 <SidebarMenu>
-                  {Object.values(PROVIDERS).map((provider) => (
-                    <SidebarMenuItem key={provider.id}>
-                      <SidebarMenuButton
-                        onClick={() => handleProviderChange(provider.id)}
-                        isActive={settings.provider === provider.id}
-                        className="h-auto py-2"
-                      >
-                        <span className="text-lg shrink-0">{provider.icon}</span>
-                        <div className="flex flex-col gap-0.5 items-start">
-                          <span className="font-medium text-sm">{provider.name}</span>
-                          <span className="text-xs text-muted-foreground font-normal">
-                            {modelCount[provider.id]} model{modelCount[provider.id] !== 1 ? 's' : ''}
-                          </span>
-                        </div>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  ))}
+                  {Object.values(PROVIDERS).map((provider) => {
+                    const isActive = settings.provider === provider.id;
+                    return (
+                      <SidebarMenuItem key={provider.id}>
+                        <SidebarMenuButton
+                          onClick={() => handleProviderChange(provider.id)}
+                          isActive={isActive}
+                          className={`h-auto py-3 ${isActive ? 'bg-primary/10 border-l-2 border-primary' : ''}`}
+                        >
+                          {provider.id === 'lmstudio' ? (
+                            <Image src="/lmstudio_icon.svg" alt="LM Studio" width={24} height={24} className="shrink-0" />
+                          ) : provider.id === 'ollama' ? (
+                            <Image src="/ollama_icon.svg" alt="Ollama" width={24} height={24} className="shrink-0" />
+                          ) : provider.id === 'bedrock' ? (
+                            <Image src="/bedrock-color.svg" alt="AWS Bedrock" width={24} height={24} className="shrink-0" />
+                          ) : (
+                            <span className="text-2xl shrink-0">{provider.icon}</span>
+                          )}
+                          <div className="flex flex-col gap-0.5 items-start">
+                            <span className={`font-medium text-sm ${isActive ? 'text-primary' : ''}`}>
+                              {provider.name}
+                            </span>
+                            <span className="text-xs text-muted-foreground font-normal">
+                              {modelCount[provider.id]} model{modelCount[provider.id] !== 1 ? 's' : ''}
+                            </span>
+                          </div>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    );
+                  })}
                 </SidebarMenu>
               </div>
 
@@ -210,6 +224,50 @@ export function AppSidebar({
             {/* General Settings Tab */}
             <TabsContent value="general" className="space-y-4 mt-4">
               <div className="space-y-4">
+                {/* Default Provider Selection */}
+                <div className="space-y-2">
+                  <Label className="text-xs font-medium">Default Provider</Label>
+                  <p className="text-xs text-muted-foreground">
+                    Select which provider to use when the app starts
+                  </p>
+                  <div className="space-y-1">
+                    {Object.values(PROVIDERS).map((provider) => (
+                      <button
+                        key={provider.id}
+                        type="button"
+                        onClick={() => {
+                          onSettingsChange({ ...settings, provider: provider.id });
+                          localStorage.setItem('defaultProvider', provider.id);
+                          toast.success('Default Provider Updated', {
+                            description: `${provider.name} will be used on next launch`,
+                          });
+                        }}
+                        className={`w-full flex items-center gap-3 px-3 py-2 rounded-md border text-sm transition-colors ${
+                          settings.provider === provider.id
+                            ? 'border-primary bg-primary/10 text-primary font-medium'
+                            : 'border-input bg-background hover:bg-accent hover:text-accent-foreground'
+                        }`}
+                      >
+                        {provider.id === 'lmstudio' ? (
+                          <Image src="/lmstudio_icon.svg" alt="LM Studio" width={20} height={20} />
+                        ) : provider.id === 'ollama' ? (
+                          <Image src="/ollama_icon.svg" alt="Ollama" width={20} height={20} />
+                        ) : provider.id === 'bedrock' ? (
+                          <Image src="/bedrock-color.svg" alt="AWS Bedrock" width={20} height={20} />
+                        ) : (
+                          <span className="text-lg">{provider.icon}</span>
+                        )}
+                        <span className="flex-1 text-left">{provider.name}</span>
+                        {settings.provider === provider.id && (
+                          <span className="text-xs text-primary">✓</span>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <SidebarSeparator />
+
                 <div className="flex items-center gap-2">
                   <KeyIcon className="size-4" />
                   <Label className="text-xs font-medium">API Keys</Label>
@@ -260,8 +318,8 @@ export function AppSidebar({
                   </p>
                 </div>
 
-                <Button 
-                  onClick={handleSaveApiKeys} 
+                <Button
+                  onClick={handleSaveApiKeys}
                   disabled={saving}
                   className="w-full h-8 text-xs"
                   size="sm"
