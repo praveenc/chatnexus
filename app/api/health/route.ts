@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { ProviderType } from '@/lib/providers';
+import { BedrockClient, ListFoundationModelsCommand } from '@aws-sdk/client-bedrock';
+import { fromNodeProviderChain } from '@aws-sdk/credential-providers';
 
 const LMSTUDIO_BASE_URL = 'http://localhost:1234/v1';
 const OLLAMA_BASE_URL = 'http://localhost:11434/api';
@@ -9,10 +11,10 @@ async function checkLMStudio() {
     const response = await fetch(`${LMSTUDIO_BASE_URL}/models`, {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' },
-      signal: AbortSignal.timeout(2000), // 2 second timeout
+      signal: AbortSignal.timeout(2000),
     });
     return response.ok;
-  } catch (error) {
+  } catch {
     return false;
   }
 }
@@ -22,21 +24,40 @@ async function checkOllama() {
     const response = await fetch(`${OLLAMA_BASE_URL}/tags`, {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' },
-      signal: AbortSignal.timeout(2000), // 2 second timeout
+      signal: AbortSignal.timeout(2000),
     });
     return response.ok;
-  } catch (error) {
+  } catch {
     return false;
   }
 }
 
-function checkBedrock() {
-  // Check if AWS credentials are configured
-  const hasAccessKey = !!process.env.AWS_ACCESS_KEY_ID;
-  const hasSecretKey = !!process.env.AWS_SECRET_ACCESS_KEY;
-  const hasRegion = !!process.env.AWS_REGION;
-  
-  return hasAccessKey && hasSecretKey && hasRegion;
+async function checkBedrock() {
+  try {
+    const region = process.env.AWS_REGION || 'us-east-1';
+
+    const bedrockClient = process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY
+      ? new BedrockClient({
+          region,
+          credentials: {
+            accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+            secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+            sessionToken: process.env.AWS_SESSION_TOKEN,
+          },
+        })
+      : new BedrockClient({
+          region,
+          credentials: fromNodeProviderChain(),
+        });
+
+    const command = new ListFoundationModelsCommand({});
+    await bedrockClient.send(command);
+
+    return true;
+  } catch (err) {
+    console.error('Bedrock health check failed:', err);
+    return false;
+  }
 }
 
 export async function GET(req: Request) {
@@ -52,21 +73,21 @@ export async function GET(req: Request) {
       switch (provider) {
         case 'lmstudio':
           status = await checkLMStudio();
-          message = status 
-            ? 'LM Studio is running' 
+          message = status
+            ? 'LM Studio is running'
             : 'LM Studio is not running on http://localhost:1234';
           break;
         case 'ollama':
           status = await checkOllama();
-          message = status 
-            ? 'Ollama is running' 
+          message = status
+            ? 'Ollama is running'
             : 'Ollama is not running on http://localhost:11434';
           break;
         case 'bedrock':
-          status = checkBedrock();
-          message = status 
-            ? 'AWS credentials configured' 
-            : 'AWS credentials not configured. Set AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, and AWS_REGION';
+          status = await checkBedrock();
+          message = status
+            ? 'AWS Bedrock is accessible'
+            : 'Cannot access AWS Bedrock. Check credentials and IAM permissions.';
           break;
       }
 
@@ -74,30 +95,30 @@ export async function GET(req: Request) {
     }
 
     // Check all providers
-    const [lmstudioStatus, ollamaStatus] = await Promise.all([
+    const [lmstudioStatus, ollamaStatus, bedrockStatus] = await Promise.all([
       checkLMStudio(),
       checkOllama(),
+      checkBedrock(),
     ]);
-    const bedrockStatus = checkBedrock();
 
     return NextResponse.json({
       lmstudio: {
         status: lmstudioStatus,
-        message: lmstudioStatus 
-          ? 'LM Studio is running' 
+        message: lmstudioStatus
+          ? 'LM Studio is running'
           : 'LM Studio is not running on http://localhost:1234',
       },
       ollama: {
         status: ollamaStatus,
-        message: ollamaStatus 
-          ? 'Ollama is running' 
+        message: ollamaStatus
+          ? 'Ollama is running'
           : 'Ollama is not running on http://localhost:11434',
       },
       bedrock: {
         status: bedrockStatus,
-        message: bedrockStatus 
-          ? 'AWS credentials configured' 
-          : 'AWS credentials not configured',
+        message: bedrockStatus
+          ? 'AWS Bedrock is accessible'
+          : 'Cannot access AWS Bedrock. Check credentials and IAM permissions.',
       },
     });
   } catch (error) {

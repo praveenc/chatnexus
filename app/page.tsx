@@ -35,6 +35,7 @@ import {
   PromptInputTools,
 } from '@/components/ai-elements/prompt-input';
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport } from 'ai';
 import { CopyIcon, RefreshCcwIcon, Trash2Icon, AlertCircleIcon, SearchIcon } from 'lucide-react';
@@ -64,7 +65,7 @@ const ChatBotDemo = () => {
   const [modelsLoading, setModelsLoading] = useState(true);
   const [modelCount, setModelCount] = useState({ lmstudio: 0, ollama: 0, bedrock: 0 });
   const [providerError, setProviderError] = useState<string | null>(null);
-  
+
   const { messages, sendMessage, status, regenerate, setMessages } = useChat({
     transport: new DefaultChatTransport({
       api: '/api/chat',
@@ -77,13 +78,24 @@ const ChatBotDemo = () => {
     }
   };
 
+  // Load default provider from localStorage on mount
+  useEffect(() => {
+    const savedProvider = localStorage.getItem('defaultProvider');
+    if (savedProvider && (savedProvider === 'lmstudio' || savedProvider === 'ollama' || savedProvider === 'bedrock')) {
+      setSettings(prev => ({
+        ...prev,
+        provider: savedProvider as ProviderSettings['provider'],
+      }));
+    }
+  }, []);
+
   // Check provider health
   useEffect(() => {
     const checkHealth = async () => {
       try {
         const response = await fetch(`/api/health?provider=${settings.provider}`);
         const data = await response.json();
-        
+
         if (!data.status) {
           setProviderError(data.message);
         } else {
@@ -105,11 +117,11 @@ const ChatBotDemo = () => {
       try {
         const response = await fetch(`/api/models?provider=${settings.provider}`);
         const data = await response.json();
-        
+
         if (data.models && data.models.length > 0) {
           setModels(data.models);
           setModelCount(data.providers || { lmstudio: 0, ollama: 0, bedrock: 0 });
-          
+
           // Set first model as default if current model is not in the list
           const currentModelExists = data.models.find((m: ModelInfo) => m.key === model);
           if (!currentModelExists && data.models.length > 0) {
@@ -128,7 +140,7 @@ const ChatBotDemo = () => {
         setModelsLoading(false);
       }
     };
-    
+
     fetchModels();
   }, [settings.provider]); // Re-fetch when provider changes
 
@@ -141,9 +153,9 @@ const ChatBotDemo = () => {
     }
 
     sendMessage(
-      { 
+      {
         text: message.text || 'Sent with attachments',
-        files: message.files 
+        files: message.files
       },
       {
         body: {
@@ -161,7 +173,7 @@ const ChatBotDemo = () => {
 
   return (
     <SidebarProvider defaultOpen={true}>
-      <AppSidebar 
+      <AppSidebar
         settings={settings}
         onSettingsChange={setSettings}
         modelCount={modelCount}
@@ -173,8 +185,23 @@ const ChatBotDemo = () => {
             <SidebarTrigger />
             <div className="flex-1 flex items-center justify-between gap-3">
               <div className="flex-1">
-                <h2 className="text-sm font-semibold mb-0.5">
-                  {settings.provider === 'lmstudio' ? '🚀 LM Studio' : settings.provider === 'ollama' ? '🦙 Ollama' : '☁️ AWS Bedrock'} AI Chat
+                <h2 className="text-sm font-semibold mb-0.5 flex items-center gap-2">
+                  {settings.provider === 'lmstudio' ? (
+                    <>
+                      <Image src="/lmstudio_icon.svg" alt="LM Studio" width={18} height={18} />
+                      <span>LM Studio AI Chat</span>
+                    </>
+                  ) : settings.provider === 'ollama' ? (
+                    <>
+                      <Image src="/ollama_icon.svg" alt="Ollama" width={18} height={18} />
+                      <span>Ollama AI Chat</span>
+                    </>
+                  ) : (
+                    <>
+                      <Image src="/bedrock-color.svg" alt="AWS Bedrock" width={18} height={18} />
+                      <span>AWS Bedrock AI Chat</span>
+                    </>
+                  )}
                 </h2>
                 <p className="text-xs text-muted-foreground">
                   {modelsLoading ? (
@@ -182,8 +209,8 @@ const ChatBotDemo = () => {
                   ) : models.length > 0 ? (
                     `${models.length} model${models.length !== 1 ? 's' : ''} available`
                   ) : (
-                    settings.provider === 'bedrock' 
-                      ? 'Configure AWS credentials to use Bedrock models'
+                    settings.provider === 'bedrock'
+                      ? 'Checking AWS Bedrock access...'
                       : `No models found. Please start ${settings.provider === 'lmstudio' ? 'LM Studio' : 'Ollama'} and load a model.`
                   )}
                 </p>
@@ -215,7 +242,7 @@ const ChatBotDemo = () => {
           </header>
 
           <div className="flex-1 flex flex-col max-w-4xl mx-auto w-full p-6">
-            
+
             {/* Provider Error Alert */}
             {providerError && (
               <Alert variant="destructive" className="mb-4">
@@ -227,11 +254,11 @@ const ChatBotDemo = () => {
                     <div className="mt-2">
                       <p className="text-xs">To configure AWS Bedrock:</p>
                       <ol className="text-xs list-decimal list-inside mt-1 space-y-0.5">
-                        <li>Create a <code className="bg-destructive/20 px-1 rounded">.env</code> file in the project root</li>
-                        <li>Add: <code className="bg-destructive/20 px-1 rounded">AWS_ACCESS_KEY_ID=your_key</code></li>
-                        <li>Add: <code className="bg-destructive/20 px-1 rounded">AWS_SECRET_ACCESS_KEY=your_secret</code></li>
-                        <li>Add: <code className="bg-destructive/20 px-1 rounded">AWS_REGION=us-east-1</code></li>
-                        <li>Restart the development server</li>
+                        <li>Option 1: Use system credentials (IAM roles, AWS profiles)</li>
+                        <li>Option 2: Set via Settings panel in sidebar</li>
+                        <li>Option 3: Create <code className="bg-destructive/20 px-1 rounded">.env</code> file with credentials</li>
+                        <li>Ensure IAM user has required Bedrock permissions</li>
+                        <li>Request model access in AWS Bedrock console</li>
                       </ol>
                     </div>
                   )}
@@ -240,8 +267,8 @@ const ChatBotDemo = () => {
                       <p>To start LM Studio:</p>
                       <ol className="list-decimal list-inside mt-1 space-y-0.5">
                         <li>Open LM Studio application</li>
-                        <li>Go to "Local Server" tab</li>
-                        <li>Click "Start Server"</li>
+                        <li>Go to &ldquo;Local Server&rdquo; tab</li>
+                        <li>Click &ldquo;Start Server&rdquo;</li>
                         <li>Load a model</li>
                       </ol>
                     </div>
@@ -259,7 +286,7 @@ const ChatBotDemo = () => {
                 </AlertDescription>
               </Alert>
             )}
-        
+
         <Conversation className="h-full">
           <ConversationContent>
             {messages.length === 0 && (
@@ -268,18 +295,22 @@ const ChatBotDemo = () => {
                 description={
                   models.length > 0
                     ? `Select a model and send a message to get started with ${
-                        settings.provider === 'lmstudio' ? 'LM Studio' : 
-                        settings.provider === 'ollama' ? 'Ollama' : 
+                        settings.provider === 'lmstudio' ? 'LM Studio' :
+                        settings.provider === 'ollama' ? 'Ollama' :
                         'AWS Bedrock'
                       }`
                     : settings.provider === 'bedrock'
-                    ? 'Configure AWS credentials (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION) to begin'
+                    ? 'Configure AWS credentials or use system environment credentials to access Bedrock models'
                     : `Please start ${settings.provider === 'lmstudio' ? 'LM Studio' : 'Ollama'} and load a model to begin`
                 }
                 icon={
-                  <div className="text-6xl">
-                    {settings.provider === 'lmstudio' ? '🚀' : settings.provider === 'ollama' ? '🦙' : '☁️'}
-                  </div>
+                  settings.provider === 'lmstudio' ? (
+                    <Image src="/lmstudio_icon.svg" alt="LM Studio" width={80} height={80} />
+                  ) : settings.provider === 'ollama' ? (
+                    <Image src="/ollama_icon.svg" alt="Ollama" width={80} height={80} />
+                  ) : (
+                    <Image src="/bedrock-color.svg" alt="AWS Bedrock" width={80} height={80} />
+                  )
                 }
               />
             )}
@@ -307,7 +338,7 @@ const ChatBotDemo = () => {
                 )}
                 {message.parts.map((part, i) => {
                   const isLastMessage = message.id === messages[messages.length - 1]?.id;
-                  
+
                   switch (part.type) {
                     case 'text':
                       return (
@@ -443,9 +474,15 @@ const ChatBotDemo = () => {
                   <PromptInputSelectTrigger>
                     {currentModel ? (
                       <div className="flex items-center gap-2">
-                        <span className="text-base">
-                          {currentModel.provider === 'lmstudio' ? '🚀' : currentModel.provider === 'ollama' ? '🦙' : '☁️'}
-                        </span>
+                        {currentModel.provider === 'lmstudio' ? (
+                          <Image src="/lmstudio_icon.svg" alt="LM Studio" width={16} height={16} />
+                        ) : currentModel.provider === 'ollama' ? (
+                          <Image src="/ollama_icon.svg" alt="Ollama" width={16} height={16} />
+                        ) : currentModel.provider === 'bedrock' ? (
+                          <Image src="/bedrock-color.svg" alt="AWS Bedrock" width={16} height={16} />
+                        ) : (
+                          <span className="text-base">☁️</span>
+                        )}
                         <span>{currentModel.name}</span>
                       </div>
                     ) : (
@@ -454,11 +491,18 @@ const ChatBotDemo = () => {
                   </PromptInputSelectTrigger>
                   <PromptInputSelectContent>
                     {models.map((m) => {
-                      const providerIcon = m.provider === 'lmstudio' ? '🚀' : m.provider === 'ollama' ? '🦙' : '☁️';
                       return (
                         <PromptInputSelectItem key={m.key} value={m.key}>
                           <div className="flex items-center gap-2">
-                            <span className="text-base">{providerIcon}</span>
+                            {m.provider === 'lmstudio' ? (
+                              <Image src="/lmstudio_icon.svg" alt="LM Studio" width={16} height={16} />
+                            ) : m.provider === 'ollama' ? (
+                              <Image src="/ollama_icon.svg" alt="Ollama" width={16} height={16} />
+                            ) : m.provider === 'bedrock' ? (
+                              <Image src="/bedrock-color.svg" alt="AWS Bedrock" width={16} height={16} />
+                            ) : (
+                              <span className="text-base">☁️</span>
+                            )}
                             <span>{m.name} {m.size && `(${m.size})`}</span>
                           </div>
                         </PromptInputSelectItem>
@@ -467,9 +511,9 @@ const ChatBotDemo = () => {
                   </PromptInputSelectContent>
                 </PromptInputSelect>
               </PromptInputTools>
-              <PromptInputSubmit 
-                disabled={!input || !model || models.length === 0} 
-                status={status} 
+              <PromptInputSubmit
+                disabled={!input || !model || models.length === 0}
+                status={status}
               />
             </PromptInputFooter>
           </PromptInput>

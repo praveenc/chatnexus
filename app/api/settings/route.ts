@@ -4,10 +4,13 @@ import path from 'path';
 
 const ENV_FILE_PATH = path.join(process.cwd(), '.env');
 
-// Read current environment variables
+/**
+ * GET /api/settings
+ * Returns current environment variable status (masked for security)
+ * Note: Credentials can be set via .env file or inferred from system environment
+ */
 export async function GET() {
   try {
-    // Return current env vars (masked for security)
     return NextResponse.json({
       AWS_ACCESS_KEY_ID: process.env.AWS_ACCESS_KEY_ID ? '••••••••' : '',
       AWS_SECRET_ACCESS_KEY: process.env.AWS_SECRET_ACCESS_KEY ? '••••••••' : '',
@@ -15,6 +18,7 @@ export async function GET() {
       TAVILY_API_KEY: process.env.TAVILY_API_KEY ? '••••••••' : '',
       hasAwsCredentials: !!(process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY),
       hasTavilyKey: !!process.env.TAVILY_API_KEY,
+      credentialsSource: process.env.AWS_ACCESS_KEY_ID ? 'environment' : 'not-configured',
     });
   } catch (error) {
     console.error('Failed to read settings:', error);
@@ -43,7 +47,7 @@ export async function POST(req: Request) {
     // Parse existing env file
     const envLines = envContent.split('\n');
     const envMap = new Map<string, string>();
-    
+
     envLines.forEach(line => {
       const trimmed = line.trim();
       if (trimmed && !trimmed.startsWith('#')) {
@@ -68,9 +72,9 @@ export async function POST(req: Request) {
       envMap.set('TAVILY_API_KEY', TAVILY_API_KEY);
     }
 
-    // Build new env file content
     const newEnvContent = [
       '# AWS Bedrock Configuration',
+      '# Note: Credentials can also be inferred from system environment (IAM roles, profiles, etc.)',
       `AWS_ACCESS_KEY_ID=${envMap.get('AWS_ACCESS_KEY_ID') || ''}`,
       `AWS_SECRET_ACCESS_KEY=${envMap.get('AWS_SECRET_ACCESS_KEY') || ''}`,
       `AWS_REGION=${envMap.get('AWS_REGION') || 'us-east-1'}`,
@@ -80,12 +84,11 @@ export async function POST(req: Request) {
       '',
     ].join('\n');
 
-    // Write to .env file
     await fs.writeFile(ENV_FILE_PATH, newEnvContent, 'utf-8');
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       success: true,
-      message: 'Settings saved. Please restart the development server for changes to take effect.',
+      message: 'Settings saved to .env file. Please restart the development server for changes to take effect.',
     });
   } catch (error) {
     console.error('Failed to save settings:', error);

@@ -22,6 +22,8 @@ A modern, full-featured chat interface supporting **local AI models** (LM Studio
 - 🗑️ **Clear Chat** - Clear conversation with one click
 - ⌨️ **Keyboard Shortcuts** - Toggle sidebar with Cmd+B / Ctrl+B
 - 🔑 **Settings Panel** - Configure API keys directly in the UI
+- 🔄 **Dynamic Model Discovery** - Bedrock models automatically loaded from your AWS account
+- 🔐 **Flexible Authentication** - Support for IAM roles, AWS profiles, and environment variables
 
 ## Environment Variables
 
@@ -89,19 +91,33 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 ### AWS Bedrock (Optional)
 
 1. Create AWS Account and enable Bedrock access
-2. Request model access in [AWS Bedrock Console](https://console.aws.amazon.com/bedrock/) for desired models:
-   - Amazon Nova Pro / Lite
-   - Claude 3.5 Sonnet / Haiku
-   - Llama 3.3 70B
-   - Mistral Large
-3. Create IAM User with `AmazonBedrockFullAccess` policy
-4. Configure in UI Settings panel or create `.env.local`:
+2. Request model access in [AWS Bedrock Console](https://console.aws.amazon.com/bedrock/)
+3. Create IAM User with permissions:
+   - `bedrock:InvokeModel`
+   - `bedrock:InvokeModelWithResponseStream`
+   - `bedrock:ListInferenceProfiles`
+   - `bedrock:ListFoundationModels`
 
+4. Configure credentials (choose one method):
+
+   **Option A: System Environment (Recommended for Production)**
+   - Use IAM roles (EC2, ECS, Lambda)
+   - Use AWS profiles (`~/.aws/credentials`)
+   - Set environment variables in your shell
+
+   **Option B: UI Settings Panel**
+   - Open sidebar → General tab
+   - Enter AWS credentials
+   - Save and restart server
+
+   **Option C: .env File**
    ```bash
    AWS_ACCESS_KEY_ID=your_access_key_id
    AWS_SECRET_ACCESS_KEY=your_secret_access_key
    AWS_REGION=us-east-1
    ```
+
+5. Available models are automatically discovered from your AWS account
 
 ### Tavily Web Search (Optional)
 
