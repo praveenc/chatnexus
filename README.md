@@ -11,7 +11,7 @@ A modern, full-featured chat interface supporting **local AI models** (LM Studio
 
 ## Features
 
-- 🚀 **Multi-Provider Support** - Switch between LM Studio, Ollama, and AWS Bedrock
+- 🚀 **Multi-Provider Support** - Switch between LM Studio, Ollama, and Amazon Bedrock
 - ☁️ **Cloud & Local** - Use local models or powerful cloud models
 - 🔍 **Web Search** - Tavily integration for real-time information
 - 🎨 **Modern UI** - Built with shadcn/ui and AI Elements
@@ -22,6 +22,22 @@ A modern, full-featured chat interface supporting **local AI models** (LM Studio
 - 🗑️ **Clear Chat** - Clear conversation with one click
 - ⌨️ **Keyboard Shortcuts** - Toggle sidebar with Cmd+B / Ctrl+B
 - 🔑 **Settings Panel** - Configure API keys directly in the UI
+
+## Environment Variables
+
+Create a `.env.local` file in the project root (copy from `.env.example`):
+
+```bash
+# AWS Bedrock (optional)
+AWS_ACCESS_KEY_ID=your_access_key_id
+AWS_SECRET_ACCESS_KEY=your_secret_access_key
+AWS_REGION=us-east-1
+
+# Tavily Web Search (optional)
+TAVILY_API_KEY=your_tavily_api_key
+```
+
+**Note:** Environment variables can also be configured directly in the UI Settings panel without restarting.
 
 ## Quick Start
 
@@ -37,7 +53,7 @@ A modern, full-featured chat interface supporting **local AI models** (LM Studio
 
 ```bash
 # Clone the repository
-git clone https://github.com/YOUR_USERNAME/chatnexus.git
+git clone https://github.com/praveenc/chatnexus.git
 cd chatnexus
 
 # Install dependencies
@@ -65,7 +81,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 2. Pull a model:
 
    ```bash
-   ollama pull llama3.2
+   ollama pull qwen3:14b
    ```
 
 3. Server starts automatically on port 11434
@@ -73,9 +89,13 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 ### AWS Bedrock (Optional)
 
 1. Create AWS Account and enable Bedrock access
-2. Request model access in [AWS Bedrock Console](https://console.aws.amazon.com/bedrock/)
+2. Request model access in [AWS Bedrock Console](https://console.aws.amazon.com/bedrock/) for desired models:
+   - Amazon Nova Pro / Lite
+   - Claude 3.5 Sonnet / Haiku
+   - Llama 3.3 70B
+   - Mistral Large
 3. Create IAM User with `AmazonBedrockFullAccess` policy
-4. Configure in UI Settings panel or create `.env`:
+4. Configure in UI Settings panel or create `.env.local`:
 
    ```bash
    AWS_ACCESS_KEY_ID=your_access_key_id
@@ -87,14 +107,16 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 Enable web search for all AI models:
 
-1. Get API key from [Tavily](https://tavily.com)
-2. Add to UI Settings panel or `.env`:
+1. Get your free API key from [Tavily](https://docs.tavily.com/documentation/api-credits)
+2. Add to UI Settings panel or `.env.local`:
 
    ```bash
    TAVILY_API_KEY=your_tavily_api_key
    ```
 
 3. Restart dev server
+
+When configured, the AI will automatically use web search to find current information and facts when needed.
 
 ## Usage
 
@@ -108,14 +130,20 @@ Enable web search for all AI models:
 
 **Model Tab:**
 
-- Temperature (0-2): Controls randomness
+- Temperature (0-2): Controls randomness (higher = more creative)
 - Max Tokens (100-4000): Maximum response length
 
 **General Tab:**
 
-- Configure AWS credentials
-- Add Tavily API key
-- Save and restart server
+- Configure AWS credentials for Bedrock
+- Add Tavily API key for web search
+- Save and restart server for changes to take effect
+
+### File Attachments
+
+- Click the attachment icon in the prompt input
+- Upload files to include context in your messages
+- Supported formats depend on the AI model
 
 ### Keyboard Shortcuts
 
@@ -126,13 +154,14 @@ Enable web search for all AI models:
 - **Framework:** Next.js 16 with App Router
 - **Language:** TypeScript
 - **AI SDK:** Vercel AI SDK
-- **UI Components:** shadcn/ui
+- **UI Components:** shadcn/ui + AI Elements
 - **Styling:** Tailwind CSS
 - **Providers:**
   - LM Studio (OpenAI-compatible)
   - Ollama
   - AWS Bedrock
 - **Search:** Tavily API
+- **Streaming:** Real-time response streaming with UI updates
 
 ## Project Structure
 
@@ -169,5 +198,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## Support
 
 - 📖 [Documentation](docs/)
-- 🐛 [Report Issues](https://github.com/YOUR_USERNAME/chatnexus/issues)
-- 💬 [Discussions](https://github.com/YOUR_USERNAME/chatnexus/discussions)
+- 🐛 [Report Issues](https://github.com/praveenc/chatnexus/issues)
+- 💬 [Discussions](https://github.com/praveenc/chatnexus/discussions)
