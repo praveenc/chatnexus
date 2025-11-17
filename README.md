@@ -1,36 +1,173 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ChatNexus
 
-## Getting Started
+[![Next.js](https://img.shields.io/badge/Next.js-16-black?logo=next.js)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?logo=typescript)](https://www.typescriptlang.org/)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![AI SDK](https://img.shields.io/badge/AI_SDK-Latest-purple)](https://sdk.vercel.ai/)
 
-First, run the development server:
+A modern, full-featured chat interface supporting **local AI models** (LM Studio, Ollama) and **cloud models** (AWS Bedrock) with web search capabilities.
+
+> **ChatNexus** - Your central hub for AI conversations across multiple providers.
+
+## Features
+
+- 🚀 **Multi-Provider Support** - Switch between LM Studio, Ollama, and AWS Bedrock
+- ☁️ **Cloud & Local** - Use local models or powerful cloud models
+- 🔍 **Web Search** - Tavily integration for real-time information
+- 🎨 **Modern UI** - Built with shadcn/ui and AI Elements
+- ⚡ **Real-time Streaming** - See responses as they're generated
+- 🎛️ **Adjustable Settings** - Control temperature and max tokens
+- 📁 **File Attachments** - Upload and discuss files
+- 💬 **Message History** - Full conversation context
+- 🗑️ **Clear Chat** - Clear conversation with one click
+- ⌨️ **Keyboard Shortcuts** - Toggle sidebar with Cmd+B / Ctrl+B
+- 🔑 **Settings Panel** - Configure API keys directly in the UI
+
+## Quick Start
+
+### Prerequisites
+
+- Node.js 18+
+- At least one of:
+  - [LM Studio](https://lmstudio.ai/) (localhost:1234)
+  - [Ollama](https://ollama.com/) (localhost:11434)
+  - [AWS Account](https://aws.amazon.com/) with Bedrock access
+
+### Installation
 
 ```bash
+# Clone the repository
+git clone https://github.com/YOUR_USERNAME/chatnexus.git
+cd chatnexus
+
+# Install dependencies
+npm install
+
+# Run the development server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Provider Setup
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### LM Studio
 
-## Learn More
+1. Download and install [LM Studio](https://lmstudio.ai/)
+2. Download a model (e.g., Llama 3.2, Qwen 2.5)
+3. Go to "Local Server" tab
+4. Click "Start Server" (port 1234)
+5. Load a model
 
-To learn more about Next.js, take a look at the following resources:
+### Ollama
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. Install [Ollama](https://ollama.com/)
+2. Pull a model:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+   ```bash
+   ollama pull llama3.2
+   ```
 
-## Deploy on Vercel
+3. Server starts automatically on port 11434
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### AWS Bedrock (Optional)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. Create AWS Account and enable Bedrock access
+2. Request model access in [AWS Bedrock Console](https://console.aws.amazon.com/bedrock/)
+3. Create IAM User with `AmazonBedrockFullAccess` policy
+4. Configure in UI Settings panel or create `.env`:
+
+   ```bash
+   AWS_ACCESS_KEY_ID=your_access_key_id
+   AWS_SECRET_ACCESS_KEY=your_secret_access_key
+   AWS_REGION=us-east-1
+   ```
+
+### Tavily Web Search (Optional)
+
+Enable web search for all AI models:
+
+1. Get API key from [Tavily](https://tavily.com)
+2. Add to UI Settings panel or `.env`:
+
+   ```bash
+   TAVILY_API_KEY=your_tavily_api_key
+   ```
+
+3. Restart dev server
+
+## Usage
+
+### Switching Providers
+
+- Click on your preferred provider in the sidebar
+- Available models update automatically
+- Select a model from the dropdown
+
+### Adjusting Settings
+
+**Model Tab:**
+
+- Temperature (0-2): Controls randomness
+- Max Tokens (100-4000): Maximum response length
+
+**General Tab:**
+
+- Configure AWS credentials
+- Add Tavily API key
+- Save and restart server
+
+### Keyboard Shortcuts
+
+- `Cmd+B` / `Ctrl+B` - Toggle sidebar
+
+## Tech Stack
+
+- **Framework:** Next.js 16 with App Router
+- **Language:** TypeScript
+- **AI SDK:** Vercel AI SDK
+- **UI Components:** shadcn/ui
+- **Styling:** Tailwind CSS
+- **Providers:**
+  - LM Studio (OpenAI-compatible)
+  - Ollama
+  - AWS Bedrock
+- **Search:** Tavily API
+
+## Project Structure
+
+```text
+├── app/
+│   ├── api/          # API routes
+│   ├── layout.tsx    # Root layout
+│   └── page.tsx      # Main chat interface
+├── components/
+│   ├── ai-elements/  # AI UI components
+│   ├── ui/           # shadcn/ui components
+│   └── app-sidebar.tsx
+├── lib/
+│   └── providers.ts  # Provider configuration
+└── docs/             # Documentation
+```
+
+## Contributing
+
+Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Acknowledgments
+
+- [Vercel AI SDK](https://sdk.vercel.ai/) - AI integration framework
+- [shadcn/ui](https://ui.shadcn.com/) - UI components
+- [LM Studio](https://lmstudio.ai/) - Local model hosting
+- [Ollama](https://ollama.com/) - Local model runtime
+- [Tavily](https://tavily.com/) - Web search API
+
+## Support
+
+- 📖 [Documentation](docs/)
+- 🐛 [Report Issues](https://github.com/YOUR_USERNAME/chatnexus/issues)
+- 💬 [Discussions](https://github.com/YOUR_USERNAME/chatnexus/discussions)
