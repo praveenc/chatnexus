@@ -183,16 +183,29 @@ When configured, the AI will automatically use web search to find current inform
 
 ```text
 ├── app/
-│   ├── api/          # API routes
-│   ├── layout.tsx    # Root layout
-│   └── page.tsx      # Main chat interface
+│   ├── api/
+│   │   ├── bedrock/       # AWS Bedrock integration
+│   │   ├── chat/          # Chat streaming endpoint
+│   │   ├── health/        # Provider health checks
+│   │   ├── model-info/    # Model information
+│   │   ├── models/        # Available models listing
+│   │   └── settings/      # Settings management
+│   ├── layout.tsx         # Root layout
+│   ├── page.tsx           # Main chat interface
+│   └── globals.css        # Global styles
 ├── components/
-│   ├── ai-elements/  # AI UI components
-│   ├── ui/           # shadcn/ui components
-│   └── app-sidebar.tsx
+│   ├── ai-elements/       # AI UI components (30+ components)
+│   ├── ui/                # shadcn/ui components
+│   ├── app-sidebar.tsx    # Sidebar with settings
+│   └── bedrock-metrics.tsx # Bedrock metrics display
+├── hooks/
+│   └── use-mobile.ts      # Mobile detection hook
 ├── lib/
-│   └── providers.ts  # Provider configuration
-└── docs/             # Documentation
+│   ├── providers.ts       # Provider configuration
+│   └── utils.ts           # Utility functions
+├── public/                # Static assets
+├── docs/                  # Documentation
+└── docs/ai-sdk/           # AI SDK documentation
 ```
 
 ## Contributing
