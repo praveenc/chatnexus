@@ -33,7 +33,21 @@ export async function updateConversation(conversationId: string) {
 }
 
 export async function getConversationMessages(conversationId: string) {
+  if (!conversationId || !ObjectId.isValid(conversationId)) {
+    throw new Error('Invalid conversation ID');
+  }
+
   const db = (await clientPromise).db(DB_NAME);
+
+  // Check if conversation exists
+  const conversation = await db
+    .collection('conversations')
+    .findOne({ _id: new ObjectId(conversationId) });
+
+  if (!conversation) {
+    throw new Error('Conversation not found');
+  }
+
   const messages = await db
     .collection('messages')
     .find({ conversationId })
@@ -66,6 +80,10 @@ export async function listConversations() {
 }
 
 export async function deleteConversation(conversationId: string) {
+  if (!conversationId || !ObjectId.isValid(conversationId)) {
+    throw new Error('Invalid conversation ID');
+  }
+
   const db = (await clientPromise).db(DB_NAME);
   const objectId = new ObjectId(conversationId);
 

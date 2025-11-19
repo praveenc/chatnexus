@@ -5,10 +5,11 @@ export const runtime = 'nodejs';
 
 export async function GET(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const messages = await getConversationMessages(params.id);
+    const { id } = await params;
+    const messages = await getConversationMessages(id);
     return NextResponse.json({ messages });
   } catch (error) {
     console.error('Failed to get conversation messages:', error);
@@ -21,10 +22,11 @@ export async function GET(
 
 export async function DELETE(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    await deleteConversation(params.id);
+    const { id } = await params;
+    await deleteConversation(id);
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Failed to delete conversation:', error);

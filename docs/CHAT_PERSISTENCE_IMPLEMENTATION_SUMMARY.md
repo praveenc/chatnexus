@@ -71,6 +71,8 @@ package.json                        |   1 +
 4. **Error Handling** - Try-catch blocks with console logging, failures don't break chat
 5. **Node.js Runtime** - Explicitly set for MongoDB driver compatibility
 6. **Minimal Code** - Only 196 lines of new code (excluding package-lock.json)
+7. **Next.js 15+ Compatibility** - Dynamic route params properly awaited (params is a Promise in Next.js 15+)
+8. **ID Validation** - ObjectId validation prevents invalid database queries
 
 ### 🎯 Architecture Highlights
 
