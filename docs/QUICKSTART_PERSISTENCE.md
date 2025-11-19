@@ -1,16 +1,37 @@
 # Quick Start: Chat Persistence
 
-## 1. Start MongoDB
+## 1. Install & Start MongoDB
+
+**Install MongoDB (if not already installed):**
 
 ```bash
 # macOS
-brew services start mongodb-community
+xcode-select --install  # Install Xcode Command-Line Tools
+brew tap mongodb/brew
+brew update
+brew install mongodb-community@7.0
+
+# Linux (Ubuntu/Debian)
+wget -qO - https://www.mongodb.org/static/pgp/server-7.0.asc | sudo apt-key add -
+echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/7.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-7.0.list
+sudo apt-get update
+sudo apt-get install -y mongodb-org
+
+# Docker (easiest)
+docker pull mongodb/mongodb-community-server:latest
+```
+
+**Start MongoDB:**
+
+```bash
+# macOS
+brew services start mongodb-community@7.0
 
 # Linux
 sudo systemctl start mongod
 
 # Docker (easiest)
-docker run -d --name mongodb -p 27017:27017 mongo:7.0
+docker run -d --name mongodb -p 27017:27017 mongodb/mongodb-community-server:latest
 ```
 
 ## 2. Configure Environment

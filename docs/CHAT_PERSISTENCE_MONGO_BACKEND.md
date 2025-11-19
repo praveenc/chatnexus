@@ -233,8 +233,17 @@ npm install mongodb
 1. Install MongoDB Community Edition:
    ```bash
    # macOS
+   # Install Xcode Command-Line Tools (if not already installed)
+   xcode-select --install
+   
+   # Tap MongoDB Homebrew repository
    brew tap mongodb/brew
-   brew install mongodb-community
+   
+   # Update Homebrew
+   brew update
+   
+   # Install MongoDB 7.0
+   brew install mongodb-community@7.0
    
    # Ubuntu
    sudo apt-get install mongodb
@@ -249,7 +258,7 @@ npm install mongodb
    mongod --dbpath ~/data/db
    
    # Or use brew services (macOS)
-   brew services start mongodb-community
+   brew services start mongodb-community@7.0
    ```
 
 3. Verify connection:

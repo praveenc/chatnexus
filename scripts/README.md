@@ -2,24 +2,42 @@
 
 ## Prerequisites
 
-1. **Start MongoDB:**
+1. **Install MongoDB (if not already installed):**
    ```bash
    # macOS
-   brew services start mongodb-community
+   xcode-select --install  # Install Xcode Command-Line Tools
+   brew tap mongodb/brew
+   brew update
+   brew install mongodb-community@7.0
+   
+   # Linux (Ubuntu/Debian)
+   wget -qO - https://www.mongodb.org/static/pgp/server-7.0.asc | sudo apt-key add -
+   echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/7.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-7.0.list
+   sudo apt-get update
+   sudo apt-get install -y mongodb-org
+   
+   # Docker (easiest for containers)
+   docker pull mongodb/mongodb-community-server:latest
+   ```
+
+2. **Start MongoDB:**
+   ```bash
+   # macOS
+   brew services start mongodb-community@7.0
    
    # Linux
    sudo systemctl start mongod
    
    # Docker
-   docker run -d --name mongodb -p 27017:27017 mongo:7.0
+   docker run -d --name mongodb -p 27017:27017 mongodb/mongodb-community-server:latest
    ```
 
-2. **Start Next.js dev server:**
+3. **Start Next.js dev server:**
    ```bash
    npm run dev
    ```
 
-3. **Verify MongoDB connection:**
+4. **Verify MongoDB connection:**
    ```bash
    mongosh mongodb://localhost:27017/chatnexus
    ```
@@ -100,7 +118,7 @@ db.messages.countDocuments()
 ## Troubleshooting
 
 **Connection refused:**
-- Ensure MongoDB is running: `brew services list` or `systemctl status mongod`
+- Ensure MongoDB is running: `brew services list` (macOS) or `systemctl status mongod` (Linux)
 - Check MONGODB_URI in `.env.local`
 
 **404 errors:**

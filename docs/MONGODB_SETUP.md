@@ -26,16 +26,69 @@ pkill mongod
 
 ```bash
 # Using Homebrew services (recommended)
-brew services start mongodb-community
+brew services start mongodb-community@7.0
 
-# Or run directly
-mongod --config /opt/homebrew/etc/mongod.conf
+# Or run directly (Intel Macs)
+mongod --config /usr/local/etc/mongod.conf --fork
+
+# Or run directly (Apple Silicon Macs)
+mongod --config /opt/homebrew/etc/mongod.conf --fork
 
 # Verify it's running
 brew services list | grep mongodb
 ```
 
 ## MongoDB Installation
+
+### macOS
+
+**Prerequisites:**
+
+```bash
+# Install Xcode Command-Line Tools (if not already installed)
+xcode-select --install
+
+# Install Homebrew (if not already installed)
+# Visit https://brew.sh for installation instructions
+```
+
+**Installation:**
+
+```bash
+# Tap MongoDB Homebrew repository
+brew tap mongodb/brew
+
+# Update Homebrew
+brew update
+
+# Install MongoDB 7.0 Community Edition
+brew install mongodb-community@7.0
+```
+
+**File Locations:**
+
+- **Intel Macs:**
+  - Config: `/usr/local/etc/mongod.conf`
+  - Data: `/usr/local/var/mongodb`
+  - Logs: `/usr/local/var/log/mongodb`
+
+- **Apple Silicon Macs:**
+  - Config: `/opt/homebrew/etc/mongod.conf`
+  - Data: `/opt/homebrew/var/mongodb`
+  - Logs: `/opt/homebrew/var/log/mongodb`
+
+**Verify Installation:**
+
+```bash
+# Check installation location
+brew --prefix
+
+# Start MongoDB
+brew services start mongodb-community@7.0
+
+# Connect to verify
+mongosh
+```
 
 ### SageMaker Code Editor / Ubuntu Container
 
@@ -119,6 +172,11 @@ net start MongoDB
 
 ### Docker (Recommended for SageMaker/Containers)
 
+```bash
+docker pull mongodb/mongodb-community-server:latest
+```
+
+
 **Best option for container environments like SageMaker Code Editor:**
 
 ```bash
@@ -127,7 +185,7 @@ docker run -d \
   --name mongodb \
   -p 27017:27017 \
   -v ~/data/db:/data/db \
-  mongo:7.0
+  mongodb/mongodb-community-server:latest
 
 # Stop MongoDB
 docker stop mongodb
@@ -159,7 +217,7 @@ pkill mongod
 
 ### macOS
 ```bash
-brew services stop mongodb-community
+brew services stop mongodb-community@7.0
 ```
 
 ### Linux
