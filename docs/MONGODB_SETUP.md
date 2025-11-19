@@ -18,6 +18,38 @@ brew services list | grep mongodb
 ### Linux (Ubuntu/Debian)
 
 ```bash
+# Install MongoDB
+wget -qO - https://www.mongodb.org/static/pgp/server-7.0.asc | sudo apt-key add -
+echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/7.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-7.0.list
+sudo apt-get update
+sudo apt-get install -y mongodb-org
+
+# Start MongoDB service
+sudo systemctl start mongod
+
+# Enable auto-start on boot
+sudo systemctl enable mongod
+
+# Check status
+sudo systemctl status mongod
+```
+
+### Amazon Linux 2023
+
+```bash
+# Create MongoDB repo file
+sudo tee /etc/yum.repos.d/mongodb-org-7.0.repo << EOF
+[mongodb-org-7.0]
+name=MongoDB Repository
+baseurl=https://repo.mongodb.org/yum/amazon/2023/mongodb-org/7.0/x86_64/
+gpgcheck=1
+enabled=1
+gpgkey=https://www.mongodb.org/static/pgp/server-7.0.asc
+EOF
+
+# Install MongoDB
+sudo yum install -y mongodb-org
+
 # Start MongoDB service
 sudo systemctl start mongod
 
