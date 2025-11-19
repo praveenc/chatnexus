@@ -7,9 +7,13 @@ import type { ProviderType } from '@/lib/providers';
 // import { z } from 'zod';
 // import { tool } from 'ai';
 import { fromNodeProviderChain } from '@aws-sdk/credential-providers';
+import { saveMessage, updateConversation } from '@/lib/db/operations';
 
 // Allow streaming responses up to 30 seconds
 export const maxDuration = 30;
+
+// Require Node.js runtime for MongoDB driver
+export const runtime = 'nodejs';
 
 // TAVILY WEB SEARCH - COMMENTED OUT
 // Initialize Tavily client only if API key is available
@@ -56,17 +60,25 @@ const bedrock = createBedrockProvider();
 export async function POST(req: Request) {
   const {
     messages,
+    conversationId,
     model: modelKey,
     provider = 'lmstudio',
     temperature = 0.7,
     maxTokens = 2000,
   }: {
     messages: UIMessage[];
+    conversationId?: string;
     model: string;
     provider?: ProviderType;
     temperature?: number;
     maxTokens?: number;
   } = await req.json();
+
+  // Save user message (non-blocking)
+  if (conversationId && messages.length > 0) {
+    saveMessage(conversationId, messages[messages.length - 1])
+      .catch(err => console.error('Failed to save user message:', err));
+  }
 
   try {
     // Select the appropriate provider
@@ -138,6 +150,17 @@ export async function POST(req: Request) {
       //   },
       // } : {}),
     });
+
+    // Save assistant response after streaming completes (non-blocking)
+    if (conversationId) {
+      result.then(async (finalResult) => {
+        await saveMessage(conversationId, {
+          role: 'assistant',
+          parts: finalResult.parts,
+        });
+        await updateConversation(conversationId);
+      }).catch(err => console.error('Failed to save assistant message:', err));
+    }
 
     return result.toUIMessageStreamResponse();
   } catch (error) {
